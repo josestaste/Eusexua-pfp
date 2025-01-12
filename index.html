@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlay Image Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+    #canvas-container {
+      position: relative;
+      display: inline-block;
+      border: 2px solid #ccc;
+      margin-top: 20px;
+    }
+    canvas {
+      display: block;
+    }
+    .controls {
+      margin-top: 20px;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 15px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Overlay Image Tool</h1>
+  <p>Upload an image that will be placed beneath the pre-established PNG overlay.</p>
+  <input type="file" id="image-upload" accept="image/*">
+  <div class="controls">
+    <button id="save-image">Save Final Image</button>
+  </div>
+  <div id="canvas-container">
+    <canvas id="image-canvas"></canvas>
+  </div>
+  <script>
+    const canvas = document.getElementById('image-canvas');
+    const ctx = canvas.getContext('2d');
+    const imageUpload = document.getElementById('image-upload');
+    const saveImage = document.getElementById('save-image');
+
+    // Pre-established PNG image with transparency
+    const overlayImage = new Image();
+    overlayImage.src = 'https://www.dropbox.com/scl/fi/yb3x7cbi9qf2rjdi2bkol/eusexua-png.png?rlkey=ttdfp9kps7s8gn5lbyup18t3h&st=4rpf2at1&raw=1'; // Replace with your transparent PNG URL
+
+    let uploadedImage = new Image();
+    let uploadedImageLoaded = false;
+
+    // Set canvas size
+    overlayImage.onload = () => {
+      canvas.width = overlayImage.width;
+      canvas.height = overlayImage.height;
+      drawCanvas();
+    };
+
+    // Draw the canvas
+    function drawCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (uploadedImageLoaded) {
+        ctx.drawImage(uploadedImage, 0, 0, canvas.width, canvas.height); // Draw uploaded image first
+      }
+      ctx.drawImage(overlayImage, 0, 0, canvas.width, canvas.height); // Draw overlay PNG on top
+    }
+
+    // Upload and load the background image
+    imageUpload.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          uploadedImage.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    uploadedImage.onload = () => {
+      uploadedImageLoaded = true;
+      drawCanvas();
+    };
+
+    // Save the final image
+    saveImage.addEventListener('click', () => {
+      if (uploadedImageLoaded) {
+        const link = document.createElement('a');
+        link.download = 'final-image.png';
+        link.href = canvas.toDataURL('image/png'); // Generate the data URL
+        link.click(); // Trigger the download
+      } else {
+        alert('Please upload an image first to create the final output.');
+      }
+    });
+  </script>
+</body>
+</html>
+
+
